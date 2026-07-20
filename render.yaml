@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: clip-blip-shopping
+    env: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.10.0

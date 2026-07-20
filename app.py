@@ -247,7 +247,9 @@ def search():
         "time_ms": int((time.time() - start_time) * 1000)
     })
 
+# Initialize the system on import so it's ready for WSGI servers like Gunicorn
+init_system()
+
 if __name__ == '__main__':
-    # Initialize the system before running the server
-    init_system()
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)
