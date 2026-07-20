@@ -21,13 +21,22 @@ class CLIPWrapper:
         if self.is_render:
             from transformers import CLIPTextModelWithProjection
             print("Render environment detected. Loading ONLY the text model to save RAM...")
-            self.model = CLIPTextModelWithProjection.from_pretrained(model_name).to(self.device)
+            
+            # On Render, the buildCommand extracts the text model to ./text_model
+            # Loading from here avoids downloading the 600MB safetensors file into memory
+            render_model_path = "./text_model"
+            if os.path.exists(render_model_path):
+                self.model = CLIPTextModelWithProjection.from_pretrained(render_model_path).to(self.device)
+                self.processor = CLIPProcessor.from_pretrained(render_model_path)
+            else:
+                print("Warning: ./text_model not found. Falling back to downloading from Hugging Face...")
+                self.model = CLIPTextModelWithProjection.from_pretrained(model_name).to(self.device)
+                self.processor = CLIPProcessor.from_pretrained(model_name)
         else:
             # Load the model
             model = CLIPModel.from_pretrained(model_name)
             self.model = model.to(self.device)
-            
-        self.processor = CLIPProcessor.from_pretrained(model_name)
+            self.processor = CLIPProcessor.from_pretrained(model_name)
         
         gc.collect()
         print("CLIP model loaded successfully.")
