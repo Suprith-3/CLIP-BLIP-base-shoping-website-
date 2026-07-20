@@ -26,8 +26,15 @@ class CLIPWrapper:
             # Loading from here avoids downloading the 600MB safetensors file into memory
             render_model_path = "./text_model"
             if os.path.exists(render_model_path):
-                self.model = CLIPTextModelWithProjection.from_pretrained(render_model_path).to(self.device)
-                self.processor = CLIPProcessor.from_pretrained(render_model_path)
+                self.model = CLIPTextModelWithProjection.from_pretrained(
+                    render_model_path, 
+                    local_files_only=True, 
+                    low_cpu_mem_usage=True
+                ).to(self.device)
+                self.processor = CLIPProcessor.from_pretrained(
+                    render_model_path, 
+                    local_files_only=True
+                )
             else:
                 print("Warning: ./text_model not found. Falling back to downloading from Hugging Face...")
                 self.model = CLIPTextModelWithProjection.from_pretrained(model_name).to(self.device)

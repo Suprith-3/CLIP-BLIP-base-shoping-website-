@@ -3,7 +3,7 @@ services:
     name: clip-blip-shopping
     env: python
     buildCommand: pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu && python extract_text_model.py
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --preload
     envVars:
       - key: PORT
         value: 10000
