@@ -16,27 +16,27 @@ class CLIPWrapper:
         
         print(f"Loading CLIP model: {model_name}...")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.is_render = os.environ.get("RENDER") == "true"
         
-        # Load the model
-        model = CLIPModel.from_pretrained(model_name)
-        
-        # If on Render, delete the vision components to fit within 512MB RAM limit
-        if os.environ.get("RENDER") == "true":
-            print("Render environment detected. Deleting vision components to save RAM...")
-            if hasattr(model, "vision_model"):
-                del model.vision_model
-            if hasattr(model, "visual_projection"):
-                del model.visual_projection
-                
-        self.model = model.to(self.device)
+        if self.is_render:
+            from transformers import CLIPTextModelWithProjection
+            print("Render environment detected. Loading ONLY the text model to save RAM...")
+            self.model = CLIPTextModelWithProjection.from_pretrained(model_name).to(self.device)
+        else:
+            # Load the model
+            model = CLIPModel.from_pretrained(model_name)
+            self.model = model.to(self.device)
+            
         self.processor = CLIPProcessor.from_pretrained(model_name)
         
         gc.collect()
         print("CLIP model loaded successfully.")
 
     def get_image_embedding(self, image_url):
-        if not hasattr(self.model, "vision_model"):
-            raise RuntimeError("Vision tower is disabled on Render to save memory.")
+        if self.is_render:
+            print(f"Skipping image embedding for {image_url} on Render (vision disabled).")
+            return np.zeros(512).tolist()
+            
         try:
             if image_url.startswith('http'):
                 response = requests.get(image_url)
@@ -69,7 +69,11 @@ class CLIPWrapper:
     def get_text_embedding(self, text):
         inputs = self.processor(text=[text], return_tensors="pt", padding=True).to(self.device)
         with torch.no_grad():
-            text_features = self.model.get_text_features(**inputs)
+            if self.is_render:
+                outputs = self.model(**inputs)
+                text_features = outputs.text_embeds
+            else:
+                text_features = self.model.get_text_features(**inputs)
             
         # Extract tensor from wrapper if necessary (transformers >= 5.0)
         if hasattr(text_features, "pooler_output"):
