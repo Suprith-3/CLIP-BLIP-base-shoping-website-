@@ -7,13 +7,36 @@ import numpy as np
 
 class CLIPWrapper:
     def __init__(self, model_name="openai/clip-vit-base-patch32"):
+        import os
+        import gc
+        
+        # Limit PyTorch threads to reduce memory overhead
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+        
         print(f"Loading CLIP model: {model_name}...")
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = CLIPModel.from_pretrained(model_name).to(self.device)
+        
+        # Load the model
+        model = CLIPModel.from_pretrained(model_name)
+        
+        # If on Render, delete the vision components to fit within 512MB RAM limit
+        if os.environ.get("RENDER") == "true":
+            print("Render environment detected. Deleting vision components to save RAM...")
+            if hasattr(model, "vision_model"):
+                del model.vision_model
+            if hasattr(model, "visual_projection"):
+                del model.visual_projection
+                
+        self.model = model.to(self.device)
         self.processor = CLIPProcessor.from_pretrained(model_name)
-        print("CLIP model loaded.")
+        
+        gc.collect()
+        print("CLIP model loaded successfully.")
 
     def get_image_embedding(self, image_url):
+        if not hasattr(self.model, "vision_model"):
+            raise RuntimeError("Vision tower is disabled on Render to save memory.")
         try:
             if image_url.startswith('http'):
                 response = requests.get(image_url)
