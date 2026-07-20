@@ -36,10 +36,18 @@
                     <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover border border-gray-800 shadow-md">
                     <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Shopping</span>
                 </div>
-                <div class="flex space-x-4">
-                    <button class="nav-btn active" data-target="task1">Smart Recs</button>
-                    <button class="nav-btn" data-target="task2">Deduplication</button>
-                    <button class="nav-btn" data-target="task3">Visual Search</button>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <button class="nav-btn active text-sm sm:text-base" data-target="task1">Smart Recs</button>
+                    <button class="nav-btn text-sm sm:text-base" data-target="task2">Deduplication</button>
+                    <button class="nav-btn text-sm sm:text-base" data-target="task3">Visual Search</button>
+                    <button class="nav-btn text-sm sm:text-base" data-target="task4">My Orders</button>
+                    
+                    <button id="cart-toggle-btn" class="relative p-2 text-gray-400 hover:text-white transition-colors ml-2 sm:ml-4 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span id="cart-badge" class="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold opacity-0 transition-opacity">0</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -152,8 +160,476 @@
             </div>
         </section>
 
+        <!-- TASK 4: My Orders & Delivery Tracking -->
+        <section id="task4" class="task-section hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold mb-2">My Orders & Live Delivery Tracker</h2>
+                <p class="text-gray-400">Track and monitor your package in real-time with our interactive simulated stepper and logistics route.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Orders List -->
+                <div class="lg:col-span-1 border-r border-gray-800 pr-0 lg:pr-8">
+                    <h3 class="text-xl font-semibold mb-4 text-primary">Order History</h3>
+                    <div id="orders-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="p-4 bg-card rounded-lg text-center text-gray-500 border border-gray-800">
+                            No orders placed yet. Add items to cart and check out.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Tracking Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="tracking-welcome-container" class="bg-card rounded-xl p-8 border border-gray-800 text-center flex flex-col items-center justify-center h-full min-h-[400px]">
+                        <svg class="w-20 h-20 text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <h4 class="text-lg font-bold text-gray-300">Select an order from the list to track its real-time delivery progress.</h4>
+                        <p class="text-sm text-gray-500 mt-2 max-w-sm">Every order simulates the full delivery lifecycle in real-time. Watch the truck move on the map!</p>
+                    </div>
+                    
+                    <div id="tracking-details-container" class="space-y-6 hidden">
+                        <!-- Upper Info Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-card border border-gray-800 rounded-xl p-4 flex flex-col justify-between">
+                                <div>
+                                    <span class="text-xs text-gray-400">Order Reference</span>
+                                    <h4 id="track-order-id" class="text-base font-bold text-white mt-1">ORD-XXXXXXXXXX</h4>
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center">
+                                    <div>
+                                        <span class="text-xs text-gray-400 block">Payment Method</span>
+                                        <span id="track-payment-method" class="text-xs font-semibold text-gray-200">COD</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs text-gray-400 block">Total Price</span>
+                                        <span id="track-total-price" class="text-xs font-semibold text-accent">₹0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Delivery Agent Info Card -->
+                            <div class="bg-card border border-gray-800 rounded-xl p-4 flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-base border border-primary/30 shrink-0">
+                                    RS
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-xs text-gray-400 block">Assigned Delivery Partner</span>
+                                    <h4 id="track-agent-name" class="font-semibold text-white text-sm">Rahul Sharma</h4>
+                                    <p id="track-agent-vehicle" class="text-xs text-gray-400 mt-0.5">Hero Splendor (DL 3S CE 4812)</p>
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="text-xs text-amber-500 font-bold flex items-center">4.9 ★</span>
+                                        <span class="text-gray-700 text-xs">|</span>
+                                        <a href="#" onclick="return false;" class="text-xs text-primary hover:underline">+91 98765 43210</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Visual Logistics Map & Animation -->
+                        <div class="bg-card border border-gray-800 rounded-xl p-6 relative overflow-hidden">
+                            <h4 class="text-sm font-semibold text-primary uppercase tracking-wider mb-4 flex justify-between items-center">
+                                Live Route Map
+                                <span id="track-eta" class="text-xs font-semibold text-accent normal-case">ETA: --</span>
+                            </h4>
+                            
+                            <!-- SVG Path Tracking -->
+                            <div class="relative w-full h-32 bg-[#141414] rounded-lg border border-gray-800 flex items-center px-4 overflow-x-auto overflow-y-hidden">
+                                <svg class="w-[780px] h-16 overflow-visible mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 64">
+                                    <!-- Dashed background route path -->
+                                    <path id="route-path-bg" d="M 30,32 C 100,5 200,5 280,32 C 350,60 480,60 560,32 C 640,5 720,5 770,32" fill="none" stroke="#2d3748" stroke-width="4" stroke-dasharray="8 6"/>
+                                    <!-- Colored completed route path -->
+                                    <path id="route-path-progress" d="M 30,32 C 100,5 200,5 280,32 C 350,60 480,60 560,32 C 640,5 720,5 770,32" fill="none" stroke="url(#route-grad)" stroke-width="5" stroke-dasharray="0 1000"/>
+                                    
+                                    <!-- Gradient -->
+                                    <defs>
+                                        <linearGradient id="route-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#4F46E5" />
+                                            <stop offset="100%" stop-color="#10B981" />
+                                        </linearGradient>
+                                    </defs>
+                                    
+                                    <!-- Map Markers -->
+                                    <!-- Warehouse (Start) -->
+                                    <circle cx="30" cy="32" r="7" fill="#4F46E5" stroke="#ffffff" stroke-width="1.5"/>
+                                    <text x="30" y="52" fill="#9ca3af" font-size="9" text-anchor="middle">Warehouse</text>
+                                    
+                                    <!-- Hub -->
+                                    <circle cx="280" cy="32" r="5" fill="#4F46E5" stroke="#ffffff" stroke-width="1"/>
+                                    <text x="280" y="52" fill="#9ca3af" font-size="9" text-anchor="middle">Hub</text>
+                                    
+                                    <!-- Sorting Center -->
+                                    <circle cx="560" cy="32" r="5" fill="#4F46E5" stroke="#ffffff" stroke-width="1"/>
+                                    <text x="560" y="52" fill="#9ca3af" font-size="9" text-anchor="middle">Sorting Center</text>
+                                    
+                                    <!-- Customer Home (End) -->
+                                    <circle cx="770" cy="32" r="8" fill="#10B981" stroke="#ffffff" stroke-width="2"/>
+                                    <text x="770" y="52" fill="#10B981" font-size="10" font-weight="bold" text-anchor="middle">Home</text>
+                                    
+                                    <!-- Delivery Truck Icon moving along path -->
+                                    <g id="truck-delivery-icon" transform="translate(30,32)">
+                                        <!-- Outer Glow -->
+                                        <circle cx="0" cy="0" r="14" fill="#10B981" opacity="0.3" class="animate-ping"/>
+                                        <circle cx="0" cy="0" r="11" fill="#4F46E5" stroke="#ffffff" stroke-width="1.5"/>
+                                        <!-- Truck drawing inside circle -->
+                                        <path d="M-5,-4 L-1,-4 L1,-1 L4,-1 L4,2 L-5,2 Z" fill="#ffffff"/>
+                                        <circle cx="-3" cy="3" r="1.2" fill="#ffffff"/>
+                                        <circle cx="2" cy="3" r="1.2" fill="#ffffff"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            
+                            <!-- Simulator Controls -->
+                            <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-black/20 p-3 rounded-lg border border-gray-800/50 space-y-2 sm:space-y-0">
+                                <span class="text-xs text-gray-500">Need to test fast? Use Developer Simulator:</span>
+                                <div class="flex space-x-2 w-full sm:w-auto">
+                                    <button id="btn-speed-up" class="flex-1 sm:flex-initial px-3 py-1 bg-primary/20 hover:bg-primary/40 border border-primary/30 rounded text-xs font-semibold text-primary transition-all">
+                                        Speed Up Simulation (10x)
+                                    </button>
+                                    <button id="btn-advance-status" class="flex-1 sm:flex-initial px-3 py-1 bg-accent/20 hover:bg-accent/40 border border-accent/30 rounded text-xs font-semibold text-accent transition-all">
+                                        Force Deliver
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tracking Stepper & Text Timeline -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Vertical Stepper -->
+                            <div class="md:col-span-2 bg-card border border-gray-800 rounded-xl p-6">
+                                <h4 class="text-sm font-semibold text-primary uppercase tracking-wider mb-6">Logistics Milestones</h4>
+                                <div id="tracking-stepper" class="relative pl-6 border-l border-gray-800 space-y-6">
+                                    <!-- Dynamically filled stepper items -->
+                                </div>
+                            </div>
+                            
+                            <!-- Shipped Items Summary -->
+                            <div class="md:col-span-1 bg-card border border-gray-800 rounded-xl p-6 flex flex-col justify-between">
+                                <div>
+                                    <h4 class="text-sm font-semibold text-primary uppercase tracking-wider mb-4">Items Shipped</h4>
+                                    <div id="tracking-items" class="space-y-3 overflow-y-auto max-h-[180px] pr-1 custom-scrollbar">
+                                        <!-- Injected items -->
+                                    </div>
+                                </div>
+                                <div class="pt-4 border-t border-gray-800 mt-4 text-xs text-gray-500">
+                                    <span>Shipping to:</span>
+                                    <p id="track-shipping-address" class="text-gray-300 font-medium mt-1 leading-relaxed">
+                                        --
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
+    <!-- Cart Drawer Overlay -->
+    <div id="cart-drawer-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300">
+        <!-- Drawer Panel -->
+        <div id="cart-drawer" class="fixed right-0 top-0 bottom-0 w-full max-w-md bg-dark/95 border-l border-gray-800 shadow-2xl z-50 flex flex-col translate-x-full transition-transform duration-300 backdrop-blur-md">
+            <!-- Drawer Header -->
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-black/30">
+                <h3 class="text-xl font-bold text-gray-100 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    Shopping Cart
+                </h3>
+                <button id="cart-close-btn" class="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-800 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Cart Items -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                <!-- Dynamically populated -->
+                <div class="text-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <p>Your cart is empty</p>
+                </div>
+            </div>
+            
+            <!-- Cart Footer / Summary -->
+            <div class="p-6 border-t border-gray-800 bg-black/40 space-y-4">
+                <div class="space-y-2 text-sm text-gray-400">
+                    <div class="flex justify-between">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal" class="text-gray-200">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Tax (GST 18%)</span>
+                        <span id="cart-tax" class="text-gray-200">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Delivery Fee</span>
+                        <span id="cart-delivery" class="text-gray-200">₹0.00</span>
+                    </div>
+                    <div class="border-t border-gray-800 pt-2 flex justify-between text-base font-bold text-white">
+                        <span>Total Amount</span>
+                        <span id="cart-total" class="text-accent font-extrabold">₹0.00</span>
+                    </div>
+                </div>
+                
+                <button id="checkout-btn" class="w-full py-3 bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-600 hover:to-primary text-white font-medium rounded-xl transition-all shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center">
+                    Proceed to Checkout
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-card w-full max-w-lg rounded-2xl border border-gray-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-black/30">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Shipping & Payment Details
+                </h3>
+                <button id="checkout-close-btn" class="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-800 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Form Fields -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <!-- Shipping Info -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-primary uppercase tracking-wider">Shipping Address</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Full Name *</label>
+                            <input type="text" id="ship-name" required class="w-full bg-dark border border-gray-800 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg p-2.5 text-sm text-white placeholder-gray-600 focus:outline-none" placeholder="e.g. John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Phone Number *</label>
+                            <input type="tel" id="ship-phone" required class="w-full bg-dark border border-gray-800 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg p-2.5 text-sm text-white placeholder-gray-600 focus:outline-none" placeholder="e.g. 9876543210">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Delivery Address *</label>
+                        <input type="text" id="ship-address" required class="w-full bg-dark border border-gray-800 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg p-2.5 text-sm text-white placeholder-gray-600 focus:outline-none" placeholder="Street name, building, apartment number">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">City *</label>
+                            <input type="text" id="ship-city" required class="w-full bg-dark border border-gray-800 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg p-2.5 text-sm text-white placeholder-gray-600 focus:outline-none" placeholder="e.g. New Delhi">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Pincode / ZIP *</label>
+                            <input type="text" id="ship-zip" required class="w-full bg-dark border border-gray-800 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg p-2.5 text-sm text-white placeholder-gray-600 focus:outline-none" placeholder="e.g. 110001">
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-800">
+                
+                <!-- Payment Method -->
+                <div class="space-y-4">
+                    <h4 class="text-sm font-semibold text-primary uppercase tracking-wider">Payment Method</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- COD -->
+                        <label class="relative flex flex-col p-4 bg-dark border border-gray-800 rounded-xl cursor-pointer hover:border-primary transition-all focus-within:ring-1 focus-within:ring-primary group">
+                            <input type="radio" name="payment_method" value="cod" checked class="sr-only">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-bold text-white">Cash on Delivery</span>
+                                <div class="w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center group-hover:border-primary">
+                                    <div class="radio-dot w-2 h-2 rounded-full bg-primary opacity-0 transition-opacity"></div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500">Pay cash/UPI at doorstep</span>
+                        </label>
+                        
+                        <!-- Online Payment (Razorpay) -->
+                        <label class="relative flex flex-col p-4 bg-dark border border-gray-800 rounded-xl cursor-pointer hover:border-primary transition-all focus-within:ring-1 focus-within:ring-primary group">
+                            <input type="radio" name="payment_method" value="online" class="sr-only">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-bold text-white">Online Payment</span>
+                                <div class="w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center group-hover:border-primary">
+                                    <div class="radio-dot w-2 h-2 rounded-full bg-primary opacity-0 transition-opacity"></div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500">Razorpay (UPI, Card, Netbanking)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="p-6 border-t border-gray-800 bg-black/40 flex space-x-4">
+                <button id="checkout-cancel-btn" class="flex-1 py-3 border border-gray-800 hover:bg-gray-800 hover:text-white text-gray-300 font-medium rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button id="place-order-btn" class="flex-1 py-3 bg-gradient-to-r from-accent to-emerald-600 hover:from-emerald-600 hover:to-accent text-white font-medium rounded-xl transition-all shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center">
+                    Place Order (₹<span id="checkout-total-val">0.00</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Razorpay Simulator Modal -->
+    <div id="razorpay-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white text-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 font-sans">
+            <!-- Razorpay Header -->
+            <div class="bg-[#182649] text-white p-6 flex justify-between items-start">
+                <div>
+                    <h3 class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-1">Payment Portal</h3>
+                    <h2 class="text-base font-bold">CLIP-BLIP Store</h2>
+                    <p id="rzp-email-phone" class="text-[10px] text-gray-400 mt-1">support@clipblipstore.com</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] text-gray-400 block">Amount to Pay</span>
+                    <span id="rzp-amount" class="text-lg font-extrabold text-[#48c78e]">₹0.00</span>
+                </div>
+            </div>
+            
+            <!-- Razorpay Body (Tabs & Views) -->
+            <div class="flex-1 min-h-[260px] flex bg-[#f8fafc]">
+                <!-- Side Navigation Menu -->
+                <div class="w-1/3 border-r border-gray-200 bg-[#edf2f7] text-[11px] font-semibold text-gray-600 flex flex-col">
+                    <button class="rzp-tab active p-4 text-left border-b border-gray-200 hover:bg-[#e2e8f0] flex items-center space-x-2 text-[#2e5cd5] border-l-4 border-l-[#2e5cd5]" data-rzp-target="rzp-card">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                        <span>Card</span>
+                    </button>
+                    <button class="rzp-tab p-4 text-left border-b border-gray-200 hover:bg-[#e2e8f0] flex items-center space-x-2" data-rzp-target="rzp-upi">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        <span>UPI / QR</span>
+                    </button>
+                    <button class="rzp-tab p-4 text-left border-b border-gray-200 hover:bg-[#e2e8f0] flex items-center space-x-2" data-rzp-target="rzp-netbanking">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <span>Netbanking</span>
+                    </button>
+                </div>
+                
+                <!-- Views Panel -->
+                <div class="w-2/3 p-4 flex flex-col justify-between text-xs text-gray-700">
+                    <!-- Card View -->
+                    <div id="rzp-card" class="rzp-view space-y-3">
+                        <h4 class="text-[10px] uppercase font-bold text-gray-500 mb-1">Card Details</h4>
+                        <div>
+                            <label class="block text-[9px] text-gray-400 font-semibold mb-0.5">CARD NUMBER</label>
+                            <div class="relative">
+                                <input type="text" id="rzp-card-number" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-[#2e5cd5] text-gray-800" placeholder="4111 1111 1111 1111" maxlength="19">
+                                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400 text-[10px] font-bold">VISA</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] text-gray-400 font-semibold mb-0.5">EXPIRY (MM/YY)</label>
+                                <input type="text" id="rzp-card-expiry" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-[#2e5cd5] text-gray-800" placeholder="12/29" maxlength="5">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] text-gray-400 font-semibold mb-0.5">CVV</label>
+                                <input type="password" id="rzp-card-cvv" maxlength="3" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-[#2e5cd5] text-gray-800" placeholder="•••">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-gray-400 font-semibold mb-0.5">CARDHOLDER NAME</label>
+                            <input type="text" id="rzp-card-name" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-[#2e5cd5] text-gray-800" placeholder="John Doe">
+                        </div>
+                    </div>
+                    
+                    <!-- UPI View -->
+                    <div id="rzp-upi" class="rzp-view hidden space-y-3">
+                        <h4 class="text-[10px] uppercase font-bold text-gray-500 mb-1">Pay via UPI ID</h4>
+                        <div>
+                            <label class="block text-[9px] text-gray-400 font-semibold mb-0.5">UPI ID / VPA</label>
+                            <input type="text" id="rzp-upi-id" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:outline-none focus:border-[#2e5cd5] text-gray-800" placeholder="username@okhdfcbank">
+                        </div>
+                        <p class="text-[10px] text-gray-500 leading-relaxed">We will send a payment request to your UPI App (GPay, PhonePe, Paytm). Open it and complete the payment.</p>
+                    </div>
+                    
+                    <!-- Netbanking View -->
+                    <div id="rzp-netbanking" class="rzp-view hidden space-y-3">
+                        <h4 class="text-[10px] uppercase font-bold text-gray-500 mb-1">Select Bank</h4>
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px] font-semibold text-gray-700">
+                            <label class="border border-gray-300 rounded-lg p-1.5 flex items-center space-x-1.5 cursor-pointer hover:bg-gray-100">
+                                <input type="radio" name="rzp_bank" value="sbi" checked class="focus:outline-none">
+                                <span>SBI</span>
+                            </label>
+                            <label class="border border-gray-300 rounded-lg p-1.5 flex items-center space-x-1.5 cursor-pointer hover:bg-gray-100">
+                                <input type="radio" name="rzp_bank" value="hdfc" class="focus:outline-none">
+                                <span>HDFC</span>
+                            </label>
+                            <label class="border border-gray-300 rounded-lg p-1.5 flex items-center space-x-1.5 cursor-pointer hover:bg-gray-100">
+                                <input type="radio" name="rzp_bank" value="icici" class="focus:outline-none">
+                                <span>ICICI</span>
+                            </label>
+                            <label class="border border-gray-300 rounded-lg p-1.5 flex items-center space-x-1.5 cursor-pointer hover:bg-gray-100">
+                                <input type="radio" name="rzp_bank" value="axis" class="focus:outline-none">
+                                <span>AXIS</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Area -->
+                    <div class="pt-3 border-t border-gray-200 mt-3">
+                        <button id="rzp-submit-btn" class="w-full py-2 bg-[#2e5cd5] hover:bg-[#2049b4] text-white text-xs font-bold rounded-lg transition-colors shadow flex justify-center items-center">
+                            Pay Securely
+                        </button>
+                        <button id="rzp-cancel-btn" class="w-full text-center text-gray-500 hover:text-gray-800 text-[10px] mt-2 block font-semibold">
+                            Cancel Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Razorpay Branding Footer -->
+            <div class="bg-gray-100 border-t border-gray-200 px-5 py-2.5 flex items-center justify-between text-[10px] text-gray-400 font-semibold">
+                <span class="flex items-center">
+                    <svg class="w-3 h-3 text-[#2e5cd5] mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.9L10 1.154l7.834 3.746v7.36c0 4.14-3.41 7.49-7.834 7.74-4.424-.25-7.834-3.6-7.834-7.74V4.9z" clip-rule="evenodd"></path></svg>
+                    Secure Connection
+                </span>
+                <span class="flex items-center space-x-1">
+                    <span>Powered by</span>
+                    <span class="text-gray-600 font-bold tracking-tight">Razorpay</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Razorpay OTP / Processing Dialog Modal -->
+    <div id="rzp-otp-modal" class="fixed inset-0 bg-black/90 z-[70] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <!-- Processing Screen -->
+        <div id="rzp-processing-screen" class="text-center text-white space-y-4 max-w-sm">
+            <div class="loader w-12 h-12 mx-auto border-4 border-white/20 border-t-white"></div>
+            <h3 class="text-xl font-bold">Processing Your Payment</h3>
+            <p class="text-sm text-gray-400">Please do not refresh the page or close the window.</p>
+        </div>
+        
+        <!-- OTP Screen -->
+        <div id="rzp-otp-screen" class="bg-white text-gray-800 p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-4 hidden font-sans">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <h3 class="font-bold text-base flex items-center text-[#182649]">
+                    <svg class="w-5 h-5 mr-2 text-primary animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    Bank 3D-Secure OTP
+                </h3>
+                <span class="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded font-bold uppercase">Simulated</span>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed">Enter the 6-digit verification code sent to your registered mobile number ending in **4812.</p>
+            <div>
+                <label class="block text-[9px] text-gray-400 font-bold mb-1 uppercase">Enter One-Time Password</label>
+                <input type="text" id="rzp-otp-input" maxlength="6" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-center text-lg tracking-widest font-extrabold focus:outline-none focus:border-[#2e5cd5] focus:bg-white text-gray-800" placeholder="123456">
+            </div>
+            <button id="rzp-otp-submit-btn" class="w-full py-2.5 bg-[#48c78e] hover:bg-[#3fb07d] text-white text-xs font-bold rounded-lg transition-colors shadow">
+                Confirm & Pay
+            </button>
+            <div class="text-center">
+                <span class="text-[10px] text-gray-400 block">Enter any 6 digits (e.g. 123456) to approve.</span>
+            </div>
+        </div>
+        
+        <!-- Success Screen -->
+        <div id="rzp-success-screen" class="text-center text-white space-y-4 max-w-sm hidden">
+            <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-2xl font-bold text-emerald-400 animate-pulse">Payment Successful</h3>
+            <p class="text-sm text-gray-300">Transaction ID: TXN_RZP_MOCK_XYZ</p>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

@@ -118,3 +118,145 @@
     font-weight: bold;
     backdrop-filter: blur(4px);
 }
+
+/* Drawer & Modal Open States */
+body.modal-open {
+    overflow: hidden;
+}
+
+#cart-drawer-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+#cart-drawer.active {
+    transform: translateX(0);
+}
+
+#checkout-modal.active, #razorpay-modal.active, #rzp-otp-modal.active {
+    display: flex !important;
+    opacity: 1;
+}
+
+#checkout-modal.active > div, #razorpay-modal.active > div, #rzp-otp-modal.active > div {
+    transform: scale(1);
+}
+
+/* Radio button styles */
+input[type="radio"]:checked ~ div .radio-dot {
+    opacity: 1;
+}
+label:has(input[type="radio"]:checked) {
+    border-color: #4F46E5 !important;
+    background-color: rgba(79, 70, 229, 0.08) !important;
+    box-shadow: 0 0 0 1px #4F46E5;
+}
+
+/* Razorpay Simulator Styling */
+.text-xxs {
+    font-size: 0.65rem;
+}
+.text-xxs-bold {
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+.rzp-tab.active {
+    background-color: #ffffff;
+    color: #2e5cd5 !important;
+    border-left: 4px solid #2e5cd5;
+}
+
+/* Stepper styles */
+.stepper-item {
+    position: relative;
+    padding-left: 0.5rem;
+}
+.stepper-item::before {
+    content: '';
+    position: absolute;
+    left: -1.75rem;
+    top: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background-color: #121212;
+    border: 2px solid #374151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+.stepper-item.completed::before {
+    background-color: #10B981;
+    border-color: #10B981;
+    content: '✓';
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.stepper-item.active::before {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.25);
+    content: '';
+}
+.stepper-item.pending::before {
+    background-color: #1E1E1E;
+    border-color: #374151;
+    content: '';
+}
+
+/* Add an hover details option on the smart recommendations section */
+.product-card-hover-cart {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background-color: #4F46E5;
+    color: white;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    z-index: 20;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);
+}
+.product-card:hover .product-card-hover-cart {
+    opacity: 1;
+    transform: translateY(0);
+}
+.product-card-hover-cart:hover {
+    background-color: #4338CA;
+    transform: scale(1.1);
+}
+
+/* Smooth fade in animation */
+.animate-fade-in {
+    animation: fadeIn 0.4s ease forwards;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbars inside drawer and lists */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4B5563;
+}
+
