@@ -1,0 +1,10 @@
+flask
+transformers
+torch
+faiss-cpu
+scikit-learn
+numpy
+pandas
+pillow
+datasets
+fsspec
